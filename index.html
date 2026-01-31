@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日倒计时</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .countdown-container {
+            text-align: center;
+            padding: 40px;
+            max-width: 1000px;
+            width: 95%;
+            background-color: rgba(30, 30, 40, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .countdown-title {
+            font-size: 3rem;
+            margin-bottom: 50px;
+            font-weight: 400;
+            color: #ffffff;
+        }
+        
+        .highlight {
+            color: #4fc3f7;
+            font-weight: 600;
+        }
+        
+        .countdown-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        
+        .time-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 5px;
+        }
+        
+        .time-value {
+            font-size: 6rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #4fc3f7;
+            margin-bottom: 5px;
+            min-width: 160px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(79, 195, 247, 0.1);
+            border-radius: 12px;
+        }
+        
+        .time-label {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: #a0a0c0;
+            margin-top: 8px;
+        }
+        
+        .separator {
+            font-size: 5rem;
+            color: #4fc3f7;
+            line-height: 140px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            margin: 0 5px;
+        }
+        
+        .status-message {
+            font-size: 1.5rem;
+            margin-top: 40px;
+            color: #a0a0c0;
+            font-weight: 300;
+        }
+        
+        @media (max-width: 1100px) {
+            .time-value {
+                font-size: 5rem;
+                min-width: 130px;
+                height: 120px;
+            }
+            
+            .separator {
+                font-size: 4rem;
+                height: 120px;
+            }
+            
+            .countdown-title {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .countdown-display {
+                gap: 5px;
+            }
+            
+            .time-value {
+                font-size: 4rem;
+                min-width: 110px;
+                height: 100px;
+            }
+            
+            .time-label {
+                font-size: 1.5rem;
+            }
+            
+            .separator {
+                font-size: 3rem;
+                height: 100px;
+                margin: 0 2px;
+            }
+            
+            .countdown-title {
+                font-size: 2.2rem;
+                margin-bottom: 40px;
+            }
+            
+            .status-message {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 700px) {
+            .countdown-display {
+                flex-wrap: wrap;
+                gap: 15px;
+                margin: 20px 0;
+            }
+            
+            .time-section {
+                width: 45%;
+                margin: 5px 0;
+            }
+            
+            .time-value {
+                font-size: 4rem;
+                min-width: 100%;
+                height: 100px;
+            }
+            
+            .separator {
+                display: none;
+            }
+            
+            .countdown-title {
+                font-size: 2rem;
+                margin-bottom: 30px;
+            }
+        }
+        
+        @media (max-width: 500px) {
+            .time-value {
+                font-size: 3.5rem;
+                height: 90px;
+            }
+            
+            .time-label {
+                font-size: 1.3rem;
+            }
+            
+            .countdown-title {
+                font-size: 1.8rem;
+            }
+            
+            .status-message {
+                font-size: 1.2rem;
+            }
+            
+            .countdown-container {
+                padding: 30px 20px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .time-value {
+                font-size: 3rem;
+                height: 80px;
+            }
+            
+            .countdown-title {
+                font-size: 1.6rem;
+            }
+        }
+        
+        /* 数字变化动画 */
+        .time-value.changing {
+            animation: numberChange 0.3s ease-out;
+        }
+        
+        @keyframes numberChange {
+            0% {
+                opacity: 0.7;
+                transform: scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="countdown-container">
+        <div class="countdown-title" id="title-text">距<span class="highlight" id="person-name">小明</span>生日还剩</div>
+        
+        <div class="countdown-display">
+            <div class="time-section">
+                <div class="time-value" id="days">000</div>
+                <div class="time-label">天</div>
+            </div>
+            
+            <div class="separator">:</div>
+            
+            <div class="time-section">
+                <div class="time-value" id="hours">00</div>
+                <div class="time-label">小时</div>
+            </div>
+            
+            <div class="separator">:</div>
+            
+            <div class="time-section">
+                <div class="time-value" id="minutes">00</div>
+                <div class="time-label">分钟</div>
+            </div>
+            
+            <div class="separator">:</div>
+            
+            <div class="time-section">
+                <div class="time-value" id="seconds">00</div>
+                <div class="time-label">秒</div>
+            </div>
+        </div>
+        
+        <div class="status-message" id="status-message">距离目标日期还有一段时间</div>
+    </div>
+
+    <script>
+        // 设置生日日期 (可以修改为您需要的日期)
+        // 格式: 月 (0-11), 日
+        const birthMonth = 4; // 6月 (月份从0开始，所以5代表6月)
+        const birthDay = 10; // 15日
+        const personName = "钟锦栋"; // 可以修改为需要的人名
+        
+        // 更新标题中的人名
+        document.getElementById('person-name').textContent = personName;
+        
+        // 获取下一个生日日期
+        function getNextBirthday() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            
+            // 今年生日
+            const thisYearBirthday = new Date(currentYear, birthMonth, birthDay, 0, 0, 0);
+            
+            // 如果今年生日已经过了，计算明年生日
+            if (now > thisYearBirthday) {
+                return new Date(currentYear + 1, birthMonth, birthDay, 0, 0, 0);
+            } else {
+                return thisYearBirthday;
+            }
+        }
+        
+        // 获取上一个生日日期
+        function getLastBirthday() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            
+            // 今年生日
+            const thisYearBirthday = new Date(currentYear, birthMonth, birthDay, 0, 0, 0);
+            
+            // 如果今年生日还没到，计算去年生日
+            if (now < thisYearBirthday) {
+                return new Date(currentYear - 1, birthMonth, birthDay, 0, 0, 0);
+            } else {
+                return thisYearBirthday;
+            }
+        }
+        
+        // 更新倒计时显示
+        function updateCountdown() {
+            const now = new Date();
+            const nextBirthday = getNextBirthday();
+            const lastBirthday = getLastBirthday();
+            
+            // 计算到下一个生日的时间差
+            const nextTimeDiff = nextBirthday.getTime() - now.getTime();
+            const nextDaysLeft = Math.floor(nextTimeDiff / (1000 * 60 * 60 * 24));
+            
+            // 计算从上个生日到现在的时间差
+            const pastTimeDiff = now.getTime() - lastBirthday.getTime();
+            
+            // 根据剩余天数决定显示什么
+            const titleElement = document.getElementById('title-text');
+            const statusElement = document.getElementById('status-message');
+            
+            // 半年 = 182.5天，这里用183天作为分界点
+            if (nextDaysLeft >= 0 && nextDaysLeft <= 183) {
+                // 距离生日不到半年，显示"距xxx生日还剩"
+                titleElement.innerHTML = `距<span class="highlight">${personName}</span>生日还剩`;
+                statusElement.textContent = `距离${personName}的生日还有一段时间`;
+                
+                // 显示到下一个生日的时间
+                const days = Math.floor(nextTimeDiff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((nextTimeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((nextTimeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((nextTimeDiff % (1000 * 60)) / 1000);
+                
+                // 更新倒计时显示
+                updateNumber('days', days.toString().padStart(3, '0'));
+                updateNumber('hours', hours.toString().padStart(2, '0'));
+                updateNumber('minutes', minutes.toString().padStart(2, '0'));
+                updateNumber('seconds', seconds.toString().padStart(2, '0'));
+            } else {
+                // 距离生日超过半年，显示"xxx生日已经过了"和过去的时间
+                titleElement.innerHTML = `<span class="highlight">${personName}</span>生日已经过了`;
+                statusElement.textContent = `${personName}的生日已经过去一段时间了`;
+                
+                // 显示过去的时间
+                const days = Math.floor(pastTimeDiff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((pastTimeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((pastTimeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((pastTimeDiff % (1000 * 60)) / 1000);
+                
+                // 更新倒计时显示
+                updateNumber('days', days.toString().padStart(3, '0'));
+                updateNumber('hours', hours.toString().padStart(2, '0'));
+                updateNumber('minutes', minutes.toString().padStart(2, '0'));
+                updateNumber('seconds', seconds.toString().padStart(2, '0'));
+            }
+        }
+        
+        // 更新数字并添加动画效果
+        function updateNumber(elementId, value) {
+            const element = document.getElementById(elementId);
+            const currentValue = element.textContent;
+            
+            if (currentValue !== value) {
+                element.classList.add('changing');
+                element.textContent = value;
+                
+                // 移除动画类，以便下次可以重新添加
+                setTimeout(() => {
+                    element.classList.remove('changing');
+                }, 300);
+            }
+        }
+        
+        // 页面加载后立即更新一次
+        updateCountdown();
+        
+        // 每秒更新一次倒计时
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
