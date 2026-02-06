@@ -5,43 +5,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>生日倒计时</title>
     <style>
+        /* 复古的CSS样式 */
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
         
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-        
-        .countdown-container {
+            font-family: "宋体", "SimSun", serif;
+            background-color: #f5f5dc; /* 牛皮纸颜色 */
+            color: #000;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cGF0aCBkPSJNMzAgMTVjLTguMjggMC0xNSA2LjcyLTE1IDE1czYuNzIgMTUgMTUgMTUgMTUtNi43MiAxNS0xNS02LjcyLTE1LTE1LTE1em0wIDVjNS41MiAwIDEwIDQuNDggMTAgMTBzLTQuNDggMTAtMTAgMTAtMTAtNC40OC0xMC0xMCA0LjQ4LTEwIDEwLTEweiIgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIwLjEiLz48L3N2Zz4=');
             text-align: center;
-            padding: 40px;
-            max-width: 1000px;
-            width: 95%;
-            background-color: rgba(30, 30, 40, 0.8);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            transition: all 0.5s ease;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
         
-        .countdown-title {
-            font-size: 3rem;
-            margin-bottom: 50px;
-            font-weight: 400;
-            color: #ffffff;
+        /* 恐怖模式样式 */
+        body.horror-mode {
+            background-color: #000 !important;
+            color: #8b0000;
+            background-image: none;
         }
         
-        .highlight {
-            color: #4fc3f7;
-            font-weight: 600;
+        /* 全屏红色覆盖层 - 置顶效果 */
+        #redOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ff0000;
+            z-index: 10001; /* 确保在最上层 */
+            opacity: 0;
+            transition: opacity 0.1s ease;
+        }
+        
+        #redOverlay.active {
+            opacity: 1;
+            display: block;
+        }
+        
+        .marquee-bg {
+            background-color: #ffcc00;
+            border: 3px double #ff6600;
+            padding: 5px;
+            margin: 10px auto;
+            width: 90%;
+            font-weight: bold;
+        }
+        
+        .container {
+            width: 800px;
+            margin: 0 auto;
+            border: 10px ridge #8b4513; /* 木纹边框 */
+            background-color: #fff8dc;
+            padding: 20px;
+            box-shadow: 5px 5px 15px #888;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .container:before {
+            content: "★";
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            font-size: 30px;
+            color: #ff0000;
+        }
+        
+        .container:after {
+            content: "★";
+            position: absolute;
+            bottom: -15px;
+            right: -15px;
+            font-size: 30px;
+            color: #ff0000;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #ff0000, #ff9900, #ffff00, #00ff00, #0000ff, #6600cc);
+            color: white;
+            padding: 15px;
+            font-size: 36px;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #000;
+            margin-bottom: 20px;
+            border: 5px outset #ff6600;
+            letter-spacing: 5px;
+        }
+        
+        .header span {
+            background-color: white;
+            color: red;
+            padding: 0 10px;
+            border: 3px dotted blue;
+            text-shadow: none;
+        }
+        
+        .countdown-area {
+            background-color: #f0f8ff;
+            border: 5px groove #4682b4;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .countdown-area:before {
+            content: "倒计时区域";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background-color: #f0f8ff;
+            padding: 0 10px;
+            font-weight: bold;
+            color: #0000ff;
+            font-size: 18px;
         }
         
         .countdown-display {
@@ -50,7 +134,7 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
-            margin: 30px 0;
+            margin: 20px 0;
         }
         
         .time-section {
@@ -61,204 +145,373 @@
         }
         
         .time-value {
-            font-size: 6rem;
-            font-weight: 700;
-            line-height: 1;
-            color: #4fc3f7;
-            margin-bottom: 5px;
-            min-width: 160px;
-            height: 140px;
+            font-size: 60px;
+            font-weight: bold;
+            color: #ff0000;
+            min-width: 120px;
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: rgba(79, 195, 247, 0.1);
-            border-radius: 12px;
+            background-color: #fff;
+            border: 5px inset #ff6600;
+            border-radius: 10px;
+            font-family: "Arial Black", "黑体", sans-serif;
+            text-shadow: 2px 2px 0 #ffcc00;
+            box-shadow: 3px 3px 5px #888;
+            margin-bottom: 5px;
         }
         
         .time-label {
-            font-size: 1.8rem;
-            font-weight: 300;
-            color: #a0a0c0;
-            margin-top: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #0000ff;
+            background-color: #ffffcc;
+            padding: 5px 15px;
+            border: 2px dotted #ff6600;
+            border-radius: 5px;
+            margin-top: 5px;
         }
         
         .separator {
-            font-size: 5rem;
-            color: #4fc3f7;
-            line-height: 140px;
-            height: 140px;
-            display: flex;
-            align-items: center;
+            font-size: 50px;
+            color: #ff0000;
+            font-weight: bold;
             margin: 0 5px;
+            text-shadow: 1px 1px 0 #000;
         }
         
-        .status-message {
-            font-size: 1.5rem;
-            margin-top: 40px;
-            color: #a0a0c0;
-            font-weight: 300;
+        .status-area {
+            background-color: #ffffcc;
+            border: 3px dashed #ff6600;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 20px;
+            color: #0000ff;
+            font-weight: bold;
         }
         
-        @media (max-width: 1100px) {
+        .footer {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e6e6fa;
+            border: 5px double #800080;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .counter {
+            background-color: #000;
+            color: #0f0;
+            padding: 5px 10px;
+            font-family: "Courier New", monospace;
+            font-size: 16px;
+            display: inline-block;
+            margin: 10px;
+            border: 2px solid #0f0;
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .rainbow-text {
+            background: linear-gradient(to right, #ff0000, #ff9900, #ffff00, #00ff00, #0000ff, #6600cc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: bold;
+        }
+        
+        .button-style {
+            background-color: #008000;
+            color: white;
+            border: 3px outset #00ff00;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .button-style:hover {
+            transform: scale(1.05);
+        }
+        
+        .button-style:active {
+            border: 3px inset #00ff00;
+        }
+        
+        /* 隐藏的按钮样式 */
+        .button-hidden {
+            display: none !important;
+        }
+        
+        /* 恐怖画面全屏覆盖 */
+        .horror-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 10000; /* 低于红色覆盖层，高于其他内容 */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .blood-text {
+            font-size: 60px;
+            color: #8b0000;
+            font-family: "楷体", "KaiTi", serif;
+            text-align: center;
+            margin-top: 20px;
+            text-shadow: 0 0 15px #ff0000;
+            animation: bloodText 3s infinite alternate;
+        }
+        
+        @keyframes bloodText {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+        
+        /* 自定义弹窗样式 */
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10002; /* 高于红色覆盖层 */
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #000;
+            border: 3px solid #8b0000;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            color: #ff0000;
+            font-size: 24px;
+            box-shadow: 0 0 30px #ff0000;
+        }
+        
+        .modal-button {
+            background-color: #8b0000;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            font-size: 18px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        
+        .modal-button:hover {
+            background-color: #ff0000;
+        }
+        
+        /* 按钮容器样式 */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 850px) {
+            .container {
+                width: 95%;
+            }
+            
             .time-value {
-                font-size: 5rem;
-                min-width: 130px;
-                height: 120px;
+                font-size: 40px;
+                min-width: 90px;
+                height: 70px;
             }
             
             .separator {
-                font-size: 4rem;
-                height: 120px;
+                font-size: 30px;
             }
             
-            .countdown-title {
-                font-size: 2.5rem;
+            .header {
+                font-size: 28px;
+            }
+            
+            .blood-text {
+                font-size: 40px;
             }
         }
         
-        @media (max-width: 900px) {
+        @media (max-width: 600px) {
             .countdown-display {
+                flex-wrap: wrap;
                 gap: 5px;
             }
             
             .time-value {
-                font-size: 4rem;
-                min-width: 110px;
-                height: 100px;
+                font-size: 30px;
+                min-width: 70px;
+                height: 60px;
             }
             
             .time-label {
-                font-size: 1.5rem;
-            }
-            
-            .separator {
-                font-size: 3rem;
-                height: 100px;
-                margin: 0 2px;
-            }
-            
-            .countdown-title {
-                font-size: 2.2rem;
-                margin-bottom: 40px;
-            }
-            
-            .status-message {
-                font-size: 1.3rem;
-            }
-        }
-        
-        @media (max-width: 700px) {
-            .countdown-display {
-                flex-wrap: wrap;
-                gap: 15px;
-                margin: 20px 0;
-            }
-            
-            .time-section {
-                width: 45%;
-                margin: 5px 0;
-            }
-            
-            .time-value {
-                font-size: 4rem;
-                min-width: 100%;
-                height: 100px;
+                font-size: 18px;
+                padding: 3px 8px;
             }
             
             .separator {
                 display: none;
             }
             
-            .countdown-title {
-                font-size: 2rem;
-                margin-bottom: 30px;
+            .header {
+                font-size: 22px;
+                letter-spacing: 2px;
+            }
+            
+            .blood-text {
+                font-size: 30px;
             }
         }
         
-        @media (max-width: 500px) {
-            .time-value {
-                font-size: 3.5rem;
-                height: 90px;
-            }
-            
-            .time-label {
-                font-size: 1.3rem;
-            }
-            
-            .countdown-title {
-                font-size: 1.8rem;
-            }
-            
-            .status-message {
-                font-size: 1.2rem;
-            }
-            
-            .countdown-container {
-                padding: 30px 20px;
-            }
-        }
-        
-        @media (max-width: 400px) {
-            .time-value {
-                font-size: 3rem;
-                height: 80px;
-            }
-            
-            .countdown-title {
-                font-size: 1.6rem;
-            }
-        }
-        
-        /* 数字变化动画 */
-        .time-value.changing {
-            animation: numberChange 0.3s ease-out;
-        }
-        
-        @keyframes numberChange {
-            0% {
-                opacity: 0.7;
-                transform: scale(0.95);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
+        /* 复古计数器样式 */
+        .visitor-counter {
+            background-color: #000;
+            color: #0f0;
+            font-family: "Courier New", monospace;
+            padding: 10px;
+            border: 3px solid #0f0;
+            display: inline-block;
+            margin: 10px;
+            font-size: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="countdown-container">
-        <div class="countdown-title" id="title-text">距<span class="highlight" id="person-name">小明</span>生日还剩</div>
+    <!-- 红色覆盖层 - 置顶效果 -->
+    <div id="redOverlay"></div>
+    
+    <!-- 恐怖画面全屏覆盖 -->
+    <div id="horrorOverlay" class="horror-overlay">
+        <div class="blood-text">血......到处都是血......</div>
+        <div class="blood-text">你逃不掉的......</div>
+    </div>
+    
+    <!-- 自定义弹窗 -->
+    <div id="horrorModal" class="custom-modal">
+        <div class="modal-content">
+            <div id="modalText">我在看着你</div>
+            <button id="modalButton" class="modal-button">确定</button>
+        </div>
+    </div>
+    
+    <!-- 跑马灯效果 -->
+    <div class="marquee-bg blink">
+        <marquee behavior="scroll" direction="left" scrollamount="3">
+        ★☆★ 欢迎访问生日倒计时网页！祝您生活愉快！ ★☆★
+        </marquee>
+    </div>
+    
+    <div class="container">
+        <!-- 标题区域 -->
+        <div class="header">
+            热烈庆祝<span id="person-name">小明</span>生日倒计时
+        </div>
         
-        <div class="countdown-display">
-            <div class="time-section">
-                <div class="time-value" id="days">000</div>
-                <div class="time-label">天</div>
+        <!-- 倒计时区域 -->
+        <div class="countdown-area">
+            <div id="title-text" class="rainbow-text" style="font-size: 28px; margin-bottom: 15px;">
+                距<span id="person-name-title">小明</span>生日还剩
             </div>
             
-            <div class="separator">:</div>
-            
-            <div class="time-section">
-                <div class="time-value" id="hours">00</div>
-                <div class="time-label">小时</div>
+            <div class="countdown-display">
+                <div class="time-section">
+                    <div class="time-value" id="days">000</div>
+                    <div class="time-label">天</div>
+                </div>
+                
+                <div class="separator">:</div>
+                
+                <div class="time-section">
+                    <div class="time-value" id="hours">00</div>
+                    <div class="time-label">小时</div>
+                </div>
+                
+                <div class="separator">:</div>
+                
+                <div class="time-section">
+                    <div class="time-value" id="minutes">00</div>
+                    <div class="time-label">分钟</div>
+                </div>
+                
+                <div class="separator">:</div>
+                
+                <div class="time-section">
+                    <div class="time-value" id="seconds">00</div>
+                    <div class="time-label">秒</div>
+                </div>
             </div>
             
-            <div class="separator">:</div>
-            
-            <div class="time-section">
-                <div class="time-value" id="minutes">00</div>
-                <div class="time-label">分钟</div>
+            <!-- 状态信息 -->
+            <div class="status-area" id="status-message">
+                距离<span id="person-name-status">小明</span>的生日还有一段时间
             </div>
             
-            <div class="separator">:</div>
-            
-            <div class="time-section">
-                <div class="time-value" id="seconds">00</div>
-                <div class="time-label">秒</div>
+            <!-- 交互按钮 -->
+            <div class="button-container">
+                <button id="blessBtn" class="button-style">点击祝福</button>
+                <button id="shareBtn" class="button-style">分享给朋友</button>
+                <button id="musicBtn" class="button-style">播放生日歌</button>
             </div>
         </div>
         
-        <div class="status-message" id="status-message">距离目标日期还有一段时间</div>
+        <!-- 装饰区域 -->
+        <div style="margin: 20px 0; padding: 10px; background-color: #fff0f5; border: 3px dotted #ff69b4;">
+            <div style="font-size: 18px; color: #ff1493; font-weight: bold; margin-bottom: 10px;">
+                ❤ 生日寄语 ❤
+            </div>
+            <div style="color: #8b0000; font-size: 16px;">
+                愿你的生日充满无穷的快乐，愿你今天的回忆温馨，愿你所有的梦想甜美，愿你这一年称心如意！
+            </div>
+        </div>
+        
+        <!-- 访客计数器 -->
+        <div class="visitor-counter">
+            您是第 <span id="visitor-count">88888</span> 位访客
+        </div>
+        
+        <!-- 页脚 -->
+        <div class="footer">
+            <div>© 2023 生日倒计时网页 版权所有</div>
+            <div>最佳分辨率：800×600 使用IE6.0以上浏览器</div>
+            <div>联系站长：webmaster@birthday-countdown.com</div>
+            <div style="margin-top: 10px;">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABaSURBVDhPY2CgE2jae/n/f2oBqjlGjRscgO4aGQgBqjlGjRscoC4a/48aN3kEBQN1NSAAAQAASURBVHgB7N0HfJXl3Qbwq2TvQAh77z1EEBDcCqi4cA9c1dbWqq21am1trVZbravi3hsVFRVFRURk7xX2XoGEEBKy1znv9/9O3pAQAoTkJOf9fU9yznn3fZ3nXGdRKyQkJCQkJCTsA0pKShI+4RNAE5jhhJ8AGmcUgjfha+AVYDUwAJiPXcO+vLw8xdbWVq+trdXRaHQ6nU6n8XhcDofDmQTsA+bPn++v1+vX0+m2O9y9e9cQ/H9Xr1692lBXV2fU19cTvU6nI3q9nmBdXV0dCIVCLk5D4Qb0qAA7YCaQC4yyM3A4HMZiMYKrqqr62snJCf0As7CwcJXBYFgQbgUqCJvNbiD84Le0tJxSV1f3OICqqir27t0Lfq1WS4qLi4mzszNxcnIiLi4uBAA3btwgDx8+JN27dycBAQHgJ2lpaaSgoKApLCysW6lUZhcVFS1TKpVrAXBzc1PV1NRwAFRXV4PJycmJ5Obmgv/YsWMkNzeXgJ+biqUSiUQwGAz4PxcALgDgwO9c/yMwCgC+Xk9AY2g0GvCYmZmByMgIPDw8YDAYhgHwAsBisaS2trZ94+LiJu3atWuFUqncCIAXAEKhsDeAnl5eXhz8z8PDw6iiooI4OTnxAOQBoNPpXhYWFu8C8PDwcBQIBB4AmpqachMSEj5ubm5uB9CzZ8+JAMYBKCsr0wLIA1BsYmKSD4D6/50BeOCFx40bN37Q0NDgD4C6n9Q+OQBmZmaeFhYWjz01NTVaAHkACgDU29raPg+A+p0PAK7gB8CMF+oHCAQCHf5nDQAzALb//5M1/H97sRmt4ScGg8GJ6tGf6nFfB9U7AGgGg/9nBP+BpK+nGQAAAABJRU5ErkJggg==" alt="IE图标" style="vertical-align: middle;">
+                本站推荐使用Internet Explorer浏览器访问
+            </div>
+        </div>
+    </div>
+    
+    <!-- 另一个跑马灯 -->
+    <div class="marquee-bg" style="margin-top: 20px;">
+        <marquee behavior="alternate" direction="right" scrollamount="2">
+        🎂 🎉 🎁 🎈 生日快乐！ 🎈 🎁 🎉 🎂
+        </marquee>
     </div>
 
     <script>
@@ -270,6 +523,15 @@
         
         // 更新标题中的人名
         document.getElementById('person-name').textContent = personName;
+        document.getElementById('person-name-title').textContent = personName;
+        document.getElementById('person-name-status').textContent = personName;
+        
+        // 模拟访客计数器
+        let visitorCount = 00000;
+        setInterval(() => {
+            visitorCount++;
+            document.getElementById('visitor-count').textContent = visitorCount;
+        }, 500); // 每30秒增加一个访客
         
         // 获取下一个生日日期
         function getNextBirthday() {
@@ -323,8 +585,8 @@
             // 半年 = 182.5天，这里用183天作为分界点
             if (nextDaysLeft >= 0 && nextDaysLeft <= 183) {
                 // 距离生日不到半年，显示"距xxx生日还剩"
-                titleElement.innerHTML = `距<span class="highlight">${personName}</span>生日还剩`;
-                statusElement.textContent = `距离${personName}的生日还有一段时间`;
+                titleElement.innerHTML = `距<span class="rainbow-text">${personName}</span>生日还剩`;
+                statusElement.innerHTML = `距离<span style="color: red; font-weight: bold;">${personName}</span>的生日还有一段时间`;
                 
                 // 显示到下一个生日的时间
                 const days = Math.floor(nextTimeDiff / (1000 * 60 * 60 * 24));
@@ -339,8 +601,8 @@
                 updateNumber('seconds', seconds.toString().padStart(2, '0'));
             } else {
                 // 距离生日超过半年，显示"xxx生日已经过了"和过去的时间
-                titleElement.innerHTML = `<span class="highlight">${personName}</span>生日已经过了`;
-                statusElement.textContent = `${personName}的生日已经过去一段时间了`;
+                titleElement.innerHTML = `<span class="rainbow-text">${personName}</span>生日已经过了`;
+                statusElement.innerHTML = `<span style="color: red; font-weight: bold;">${personName}</span>的生日已经过去一段时间了`;
                 
                 // 显示过去的时间
                 const days = Math.floor(pastTimeDiff / (1000 * 60 * 60 * 24));
@@ -362,13 +624,16 @@
             const currentValue = element.textContent;
             
             if (currentValue !== value) {
-                element.classList.add('changing');
+                // 添加简单的数字变化效果
+                element.style.backgroundColor = '#ffff00';
+                element.style.color = '#ff0000';
                 element.textContent = value;
                 
-                // 移除动画类，以便下次可以重新添加
+                // 恢复原色
                 setTimeout(() => {
-                    element.classList.remove('changing');
-                }, 300);
+                    element.style.backgroundColor = '#fff';
+                    element.style.color = '#ff0000';
+                }, 200);
             }
         }
         
@@ -377,6 +642,67 @@
         
         // 每秒更新一次倒计时
         setInterval(updateCountdown, 1000);
+        
+        // 添加一些土味交互
+        document.querySelectorAll('.time-value').forEach(element => {
+            element.addEventListener('click', function() {
+                alert('时间正在流逝，珍惜每一刻！');
+            });
+        });
+        
+        // 按钮交互功能
+        // 第一个按钮：点击祝福
+        document.getElementById('blessBtn').addEventListener('click', function() {
+            window.open('https://www.bilibili.com/video/BV1GJ411x7h7/?spm_id_from=333.337.search-card.all.click', '_blank');
+        });
+        
+        // 第二个按钮：分享给朋友 - 恐怖效果
+        document.getElementById('shareBtn').addEventListener('click', function() {
+            // 显示恐怖画面
+            document.getElementById('horrorOverlay').style.display = 'flex';
+            
+            // 关闭所有音频（如果有）
+            const allAudios = document.querySelectorAll('audio');
+            allAudios.forEach(audio => {
+                audio.pause();
+            });
+            
+            // 立即显示弹窗
+            setTimeout(() => {
+                document.getElementById('horrorModal').style.display = 'flex';
+            }, 100);
+        });
+        
+        // 弹窗确定按钮
+        document.getElementById('modalButton').addEventListener('click', function() {
+            // 关闭弹窗和恐怖画面
+            document.getElementById('horrorModal').style.display = 'none';
+            document.getElementById('horrorOverlay').style.display = 'none';
+            
+            // 恢复正常模式
+            document.body.classList.remove('horror-mode');
+            
+            // 恢复音频（如果有）
+            const allAudios = document.querySelectorAll('audio');
+            allAudios.forEach(audio => {
+                audio.play();
+            });
+        });
+        
+        // 第三个按钮：播放生日歌 - 全屏变红（置顶效果）
+        document.getElementById('musicBtn').addEventListener('click', function() {
+            const redOverlay = document.getElementById('redOverlay');
+            const button = this;
+            
+            // 显示红色覆盖层（置顶效果）
+            redOverlay.classList.add('active');
+            
+            // 0.5秒后移除红色效果，并隐藏第三个按钮
+            setTimeout(() => {
+                redOverlay.classList.remove('active');
+                button.classList.add('button-hidden');
+            }, 500);
+        });
     </script>
 </body>
 </html>
